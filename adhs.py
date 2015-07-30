@@ -1,9 +1,12 @@
 #!/usr/bin/env python
 from flask import Flask, request, render_template
 from flask.ext.cors import CORS
-from adhs_response import *
-import rdflib
+import adhocsparql
+from adhocsparql.response import get_response
 import argparse
+import jinja2
+import os
+import rdflib
 
 # command line parameters
 parser = argparse.ArgumentParser()
@@ -42,6 +45,15 @@ with open(args.file, 'r') as fi:
 # set up a micro service using flash
 app = Flask(__name__, static_url_path='')
 cors = CORS(app)
+
+# allow templates in multiple places
+choice_loader = jinja2.ChoiceLoader([
+    app.jinja_loader,
+    jinja2.FileSystemLoader([os.path.join(os.path.dirname(adhocsparql.__file__),
+                                          'templates')]),
+])
+
+app.jinja_loader = choice_loader
 
 @app.route("/sparql", methods=['GET'])
 def sparql():
